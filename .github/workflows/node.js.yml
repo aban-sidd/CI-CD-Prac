@@ -2,35 +2,52 @@ name: Expo EAS Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   eas-build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Setup Expo and EAS
+      # EAS CLI + auth (uses EXPO_TOKEN you already configured)
+      - name: Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci || npm i
 
-      - name: Build Android APK
+      # Build APK using the 'preview' profile from eas.json
+      - name: Run EAS Build (Android APK)
         run: eas build -p android --profile preview --non-interactive
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: expo-apk
-          path: dist/
+      # Show the latest build info (includes a URL to the page with QR)
+      - name: Show latest build
+        run: eas build:list --limit 1
+
+      # (Optional) Print a direct build URL to the logs for quick access
+      - name: Print latest build URL (JSON)
+        run: |
+          npx --yes jq --version >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y jq
+          eas build:list --limit 1 --json | jq -r '.[0].webUrl'
+
+      # (Optional) You can still upload local artifacts if you export anything locally.
+      # EAS stores the APK remotely; 'dist/' is usually empty for EAS cloud builds.
+      # Remove this step unless you actually generate files in dist/.
+      # - name: Upload APK artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: expo-apk
+      #     path: dist/
