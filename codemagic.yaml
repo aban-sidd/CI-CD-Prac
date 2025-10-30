@@ -1,0 +1,29 @@
+workflows:
+  preview-apk:
+    name: Preview APK Build
+    max_build_duration: 60
+    environment:
+      node: 18
+      groups:
+        - ExpoTokenGroup   # Must exactly match the variable group containing EXPO_TOKEN
+    scripts:
+      - name: Install dependencies
+        script: npm install
+      - name: Install EAS CLI
+        script: npm install -g eas-cli
+      - name: Test EXPO_TOKEN availability
+        script: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "ERROR: EXPO_TOKEN is not set"
+            exit 1
+          else
+            echo "EXPO_TOKEN is set"
+          fi
+      - name: Build Preview APK
+        script: eas build --platform android --profile preview --non-interactive
+    artifacts:
+      - '**/*.apk'
+    publishing:
+      email:
+        recipients:
+          - abansiddiqui4@gmail.com
