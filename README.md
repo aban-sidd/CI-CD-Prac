@@ -1,5 +1,5 @@
 <<<<<<< HEAD
-
-=======
 # CI-CD-Prac
->>>>>>> a89f197 (Initial commit)
+=======
+
+>>>>>>> 4536de1 (note app)
