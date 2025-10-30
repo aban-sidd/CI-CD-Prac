@@ -21,16 +21,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Expo CLI + EAS CLI
-        run: npm install -g expo-cli eas-cli
-
-      - name: Authenticate with Expo
+      - name: Install Expo & EAS CLI
         run: |
-          npx expo whoami || npx expo login --token ${{ secrets.EXPO_TOKEN }}
+          npm install -g eas-cli @expo/cli
+
+      - name: Authenticate with Expo (EAS CLI)
+        run: |
+          npx eas whoami || npx eas login --token ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android APK
         run: |
-          eas build -p android --profile preview --non-interactive
+          npx eas build -p android --profile preview --non-interactive
 
       - name: Upload built APK
         uses: actions/upload-artifact@v4
