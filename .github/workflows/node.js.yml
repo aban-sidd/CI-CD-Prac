@@ -8,7 +8,6 @@ on:
 jobs:
   eas-build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,7 +17,6 @@ jobs:
         with:
           node-version: 20
 
-      # EAS CLI + auth (uses EXPO_TOKEN you already configured)
       - name: Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
@@ -26,28 +24,15 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Install dependencies
-        run: |
-          npm ci || npm i
+        run: npm ci || npm i
 
-      # Build APK using the 'preview' profile from eas.json
-      - name: Run EAS Build (Android APK)
+      - name: Build Android (APK via 'preview' profile)
         run: eas build -p android --profile preview --non-interactive
 
-      # Show the latest build info (includes a URL to the page with QR)
-      - name: Show latest build
-        run: eas build:list --limit 1
+      - name: Show latest build (non-interactive)
+        run: eas build:list --limit 1 --non-interactive
 
-      # (Optional) Print a direct build URL to the logs for quick access
-      - name: Print latest build URL (JSON)
+      - name: Print latest build page (QR link)
         run: |
-          npx --yes jq --version >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y jq
-          eas build:list --limit 1 --json | jq -r '.[0].webUrl'
-
-      # (Optional) You can still upload local artifacts if you export anything locally.
-      # EAS stores the APK remotely; 'dist/' is usually empty for EAS cloud builds.
-      # Remove this step unless you actually generate files in dist/.
-      # - name: Upload APK artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: expo-apk
-      #     path: dist/
+          sudo apt-get update && sudo apt-get install -y jq
+          eas build:list --limit 1 --json --non-interactive | jq -r '.[0].webUrl'
